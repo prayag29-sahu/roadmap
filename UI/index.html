@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homestay SaaS & Beds24 Integration Roadmap</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #EEF2FF;
+            --primary-hover: #4338CA;
+            --text-dark: #111827;
+            --text-muted: #6B7280;
+            --border-color: #E5E7EB;
+            --month-bg: #F3F4F6;
+
+            --badge-pending-bg: #FEF3C7;
+            --badge-pending-text: #D97706;
+            --badge-inprogress-bg: #DBEAFE;
+            --badge-inprogress-text: #1D4ED8;
+            --badge-complete-bg: #D1FAE5;
+            --badge-complete-text: #059669;
+            --badge-incomplete-bg: #FEE2E2;
+            --badge-incomplete-text: #B91C1C;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #F9FAFB;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+
+        .table-container {
+            width: 100%;
+            max-width: 1250px;
+            /* Thoda wide kiya extra column ke liye */
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: #ffffff;
+            font-weight: 600;
+            padding: 16px;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #F9FAFB;
+        }
+
+        /* Month Divider Row */
+        .month-row {
+            background-color: var(--month-bg);
+            font-weight: 700;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 12px 16px;
+            border-top: 2px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .month-row:first-child {
+            border-top: none;
+        }
+
+        /* Progress Bar */
+        .progress-wrapper {
+            width: 100px;
+            background-color: #E5E7EB;
+            border-radius: 999px;
+            height: 8px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 999px;
+            transition: width 0.4s ease;
+            /* Smooth transition */
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            min-width: 90px;
+        }
+
+        .badge.pending {
+            background-color: var(--badge-pending-bg);
+            color: var(--badge-pending-text);
+        }
+
+        .badge.in-progress {
+            background-color: var(--badge-inprogress-bg);
+            color: var(--badge-inprogress-text);
+        }
+
+        .badge.complete {
+            background-color: var(--badge-complete-bg);
+            color: var(--badge-complete-text);
+        }
+
+        .badge.incomplete {
+            background-color: var(--badge-incomplete-bg);
+            color: var(--badge-incomplete-text);
+        }
+
+        .bold-text {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* Action Buttons */
+        .btn-edit {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .btn-edit:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Connection Status */
+        #connection-status {
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+
+        .status-online {
+            background-color: #D1FAE5;
+            color: #059669;
+        }
+
+        .status-offline {
+            background-color: #FEE2E2;
+            color: #B91C1C;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-save:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-cancel {
+            background: white;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Homestay SaaS & PMS Development Roadmap</h1>
+    <p class="subtitle">Complete timeline from App UI design, Beds24 API integration, Custom PMS dashboard development,
+        to Play Store deployment (April 2026 - October 2026).</p>
+
+    <!-- Backend Connection Status Indicator -->
+    <div id="connection-status" class="status-offline">🔴 Backend Disconnected. Checking connection...</div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Date / Timeline</th>
+                    <th style="width: 20%;">Phase Title</th>
+                    <th style="width: 35%;">Description & Tasks</th>
+                    <th style="width: 10%;">Progress</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 10%;">Action</th> <!-- New Action Column -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- APRIL DIVISION -->
+                <tr>
+                    <td colspan="6" class="month-row">📅 April 2026 - Foundation, UI Prep & Setup</td>
+                </tr>
+                <tr data-phase-id="pre-phase-cleaner">
+                    <td>1st Apr - 2nd Apr</td>
+                    <td class="bold-text phase-title">Pre-Phase: Cleaner Dashboard</td>
+                    <td>Fix Cleaner dashboard UI/UX. Daily 4 hours effort.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('pre-phase-cleaner')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="pre-phase-night-manager">
+                    <td>3rd Apr - 7th Apr</td>
+                    <td class="bold-text phase-title">Pre-Phase: Night Manager UI</td>
+                    <td>Build Night Manager dashboard and implement staff/owner feedback.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('pre-phase-night-manager')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="pre-phase-manager-owner">
+                    <td>8th Apr - 14th Apr</td>
+                    <td class="bold-text phase-title">Pre-Phase: Manager & Owner UI</td>
+                    <td>Design complete dashboard for Property Manager and Owner.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('pre-phase-manager-owner')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="pre-phase-api-exams">
+                    <td>15th Apr - 19th Apr</td>
+                    <td class="bold-text phase-title">Pre-Phase: API Analysis & Exams</td>
+                    <td>Deep dive into Beds24 API fetch details + Exam preparation.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('pre-phase-api-exams')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="pre-phase-auto-booking">
+                    <td>20th Apr - 27th Apr</td>
+                    <td class="bold-text phase-title">Pre-Phase: Auto Booking Setup</td>
+                    <td>Try to build automatic booking dashboard via website.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('pre-phase-auto-booking')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="phase-1-zero-code">
+                    <td>1st Apr - 28th Apr</td>
+                    <td class="bold-text phase-title">Phase 1: Zero-Code Setup</td>
+                    <td>Parallel Task: Owner shifts staff to Beds24 UI. Map existing data from old PMS to Beds24.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-1-zero-code')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="trial-initiation">
+                    <td>28th Apr</td>
+                    <td class="bold-text phase-title">Beds24 Trial Initiation</td>
+                    <td>Start Beds24 14-days Free Trial. Check dashboard & start sync testing.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('trial-initiation')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="phase-2-read-only">
+                    <td>29th Apr - 8th May</td>
+                    <td class="bold-text phase-title">Phase 2: Read-Only API & UI</td>
+                    <td>(Under 10 days of trial) API integration to read data. Build custom UI fetching live PMS data.
+                    </td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-2-read-only')">Edit</button></td>
+                </tr>
+
+                <!-- MAY DIVISION -->
+                <tr>
+                    <td colspan="6" class="month-row">📅 May 2026 - Real-Time Sync & Integration</td>
+                </tr>
+                <tr data-phase-id="phase-3-real-time">
+                    <td>9th May - 15th May</td>
+                    <td class="bold-text phase-title">Phase 3: Real-Time Sync</td>
+                    <td>(Last 4-5 days of trial). Implement Webhooks & WebSockets. Fetch PMS data seamlessly to custom
+                        dashboard.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-3-real-time')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="phase-4-two-way">
+                    <td>16th May - 15th Jun</td>
+                    <td class="bold-text phase-title">Phase 4: Two-Way Integration</td>
+                    <td>Write operations via API: Manual Bookings, Dynamic Pricing, Blocks, Payment Gateway integration.
+                    </td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-4-two-way')">Edit</button></td>
+                </tr>
+
+                <!-- JUNE DIVISION -->
+                <tr>
+                    <td colspan="6" class="month-row">📅 June 2026 - Final Transition</td>
+                </tr>
+                <tr data-phase-id="phase-5-full-switch">
+                    <td>16th Jun - 30th Jun</td>
+                    <td class="bold-text phase-title">Phase 5: Full Switch</td>
+                    <td>Completely shift operations to the new custom SaaS platform. Beds24 remains in the background.
+                    </td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-5-full-switch')">Edit</button></td>
+                </tr>
+
+                <!-- JULY & AUGUST DIVISION -->
+                <tr>
+                    <td colspan="6" class="month-row">📅 July & August 2026 - Testing & Staff Sync</td>
+                </tr>
+                <tr data-phase-id="phase-6-ui-handover">
+                    <td>1st Jul - 15th Aug</td>
+                    <td class="bold-text phase-title">Phase 6: UI Handover & Test</td>
+                    <td>Handover complete system to the Homestays team to use instead of Beds24 UI. Rigorous testing.
+                    </td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-6-ui-handover')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="phase-7-staff-sync">
+                    <td>16th Aug - 31st Aug</td>
+                    <td class="bold-text phase-title">Phase 7: Staff System Sync</td>
+                    <td>Final synchronization of the complete system with all homestay staff members.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-7-staff-sync')">Edit</button></td>
+                </tr>
+
+                <!-- SEPTEMBER DIVISION -->
+                <tr>
+                    <td colspan="6" class="month-row">📅 September 2026 - Guest Facing Features & App Dev</td>
+                </tr>
+                <tr data-phase-id="phase-8-guest-website">
+                    <td>1st Sep - 15th Sep</td>
+                    <td class="bold-text phase-title">Phase 8: Guest Website Design</td>
+                    <td>Website UI for guests: Account creation, special offers, dynamic bookings, community creation.
+                    </td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-8-guest-website')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="phase-9-modify-reviews">
+                    <td>16th Sep - 20th Sep</td>
+                    <td class="bold-text phase-title">Phase 9: Modify on Guest Reviews</td>
+                    <td>Implement feedback. Modify guest account sections and features accordingly.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-9-modify-reviews')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="phase-10-complete-app">
+                    <td>21st Sep - 15th Oct</td>
+                    <td class="bold-text phase-title">Phase 10: Complete App Setup</td>
+                    <td>Develop the complete Mobile App for all users and guests. Configure all web tools with the app.
+                    </td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-10-complete-app')">Edit</button></td>
+                </tr>
+
+                <!-- OCTOBER DIVISION -->
+                <tr>
+                    <td colspan="6" class="month-row">📅 October 2026 - App Launch & Wrap Up</td>
+                </tr>
+                <tr data-phase-id="phase-11-app-deploy">
+                    <td>16th Oct - 31st Oct</td>
+                    <td class="bold-text phase-title">Phase 11: App Deploy & Bug Fixes</td>
+                    <td>Deploy the Application on Google Play Store. Monitor and resolve any initial bugs.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-11-app-deploy')">Edit</button></td>
+                </tr>
+                <tr data-phase-id="phase-12-extra-work">
+                    <td>1st Nov Onwards</td>
+                    <td class="bold-text phase-title">Phase 12: Extra Work / Buffer</td>
+                    <td>Buffer period for any pending tasks or additional requested features. Project Maintenance.</td>
+                    <td><span class="progress-text">0%</span>
+                        <div class="progress-wrapper">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td><button class="btn-edit" onclick="openModal('phase-12-extra-work')">Edit</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- UPDATE MODAL (Hidden by default) -->
+    <div class="modal-overlay" id="updateModal">
+        <div class="modal">
+            <h2>Update Phase Progress</h2>
+            <form id="updateForm">
+                <input type="hidden" id="edit-phase-id">
+
+                <div class="form-group">
+                    <label>Phase Title</label>
+                    <input type="text" id="edit-phase-title" readonly
+                        style="background-color: #f3f4f6; color: #6b7280; outline: none;">
+                </div>
+
+                <div class="form-group">
+                    <label>Progress (%)</label>
+                    <input type="number" id="edit-progress" min="0" max="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="edit-status" required>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Complete">Complete</option>
+                        <option value="Incomplete">Incomplete</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Client-Side Javascript Logic for API and Modal -->
+    <script>
+        // Ensure this matches the port in your package.json / server.js file
+        const API_BASE_URL = 'http://localhost:5000/api/phases';
+        const statusIndicator = document.getElementById('connection-status');
+
+        // Automatically fetch data when page loads
+        document.addEventListener("DOMContentLoaded", fetchPhases);
+
+        // Fetch all phases from the Node.js backend
+        async function fetchPhases() {
+            try {
+                const response = await fetch(API_BASE_URL);
+                if (response.ok) {
+                    statusIndicator.innerHTML = '🟢 Backend Connected & Synced Successfully';
+                    statusIndicator.className = 'status-online';
+
+                    const phases = await response.json();
+                    phases.forEach(phase => {
+                        updateRowUI(phase.phaseId, phase.progress, phase.status);
+                    });
+                } else {
+                    throw new Error("API Response not OK");
+                }
+            } catch (error) {
+                console.error("Backend Error:", error);
+                statusIndicator.innerHTML = '🔴 Backend Disconnected. Ensure Node server (npm run dev) is running.';
+                statusIndicator.className = 'status-offline';
+            }
+        }
+
+        // Update the HTML table row with new progress and status
+        function updateRowUI(phaseId, progress, status) {
+            const row = document.querySelector(`tr[data-phase-id="${phaseId}"]`);
+            if (!row) return;
+
+            row.querySelector('.progress-text').innerText = `${progress}%`;
+            row.querySelector('.progress-fill').style.width = `${progress}%`;
+
+            const badge = row.querySelector('.badge');
+            badge.innerText = status;
+
+            // Assign specific colors to specific statuses
+            let badgeClass = 'pending';
+            if (status === 'In Progress') badgeClass = 'in-progress';
+            if (status === 'Complete') badgeClass = 'complete';
+            if (status === 'Incomplete') badgeClass = 'incomplete';
+
+            badge.className = `badge ${badgeClass}`;
+        }
+
+        // --- MODAL CONTROLS ---
+        const modal = document.getElementById('updateModal');
+
+        function openModal(phaseId) {
+            const row = document.querySelector(`tr[data-phase-id="${phaseId}"]`);
+
+            const currentTitle = row.querySelector('.phase-title').innerText;
+            const currentProgress = row.querySelector('.progress-text').innerText.replace('%', '');
+            const currentStatus = row.querySelector('.badge').innerText;
+
+            document.getElementById('edit-phase-id').value = phaseId;
+            document.getElementById('edit-phase-title').value = currentTitle;
+            document.getElementById('edit-progress').value = currentProgress;
+            document.getElementById('edit-status').value = currentStatus;
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        // --- SUBMIT DATA TO NODE.JS BACKEND ---
+        document.getElementById('updateForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const phaseId = document.getElementById('edit-phase-id').value;
+            const title = document.getElementById('edit-phase-title').value;
+            const progress = document.getElementById('edit-progress').value;
+            const status = document.getElementById('edit-status').value;
+
+            const saveBtn = document.querySelector('.btn-save');
+            const originalBtnText = saveBtn.innerText;
+            saveBtn.innerText = "Saving...";
+            saveBtn.disabled = true;
+
+            try {
+                // Send PUT request to the backend API
+                const response = await fetch(`${API_BASE_URL}/${phaseId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, progress: Number(progress), status })
+                });
+
+                if (response.ok) {
+                    updateRowUI(phaseId, progress, status);
+                    closeModal();
+                } else {
+                    const errData = await response.json();
+                    alert(`Error: ${errData.message}`);
+                }
+            } catch (error) {
+                alert("Failed to update! Please make sure your Node.js backend is running.");
+                console.error(error);
+            } finally {
+                saveBtn.innerText = originalBtnText;
+                saveBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>
