@@ -14,6 +14,10 @@ app.use(express.json());
 // Database connect karein
 connectDB();
 
+app.get('/', (req, res) => {
+  res.send('Backend is running perfectly! APIs are at /api/phases');
+});
+
 // API Routes setup karein
 // Saare roadmap routes /api/phases se start honge
 app.use('/api/phases', phaseRoutes);
